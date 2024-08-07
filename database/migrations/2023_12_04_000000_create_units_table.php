@@ -16,7 +16,13 @@ return new class extends Migration {
         Schema::create(config('unit.tables.unit'), function (Blueprint $table) {
             $table->id();
 
-            $table->enum('type', UnitTypeEnum::values())->index();
+            $table->string('type')->index();
+            /**
+             * unit type
+             *
+             * value: weight, length, currency, number, crypto, ...
+             * use: @extends UnitTypeEnum
+             */
 
             $table->decimal('value', 15, 8)->default(0);
 
