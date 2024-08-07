@@ -4,17 +4,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Time
+    | Table Name
     |--------------------------------------------------------------------------
     |
-    | Cache time for get data unit
-    |
-    | - set zero for remove cache
-    | - set null for forever
-    |
-    | - unit: minutes
+    | Table name in database
     */
 
-    "cache_time" => env("UNIT_CACHE_TIME", 0),
+    "tables" => [
+        'unit' => 'units',
+        'unit_relation' => 'unit_relations'
+    ],
 
 ];
