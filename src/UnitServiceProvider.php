@@ -2,6 +2,7 @@
 
 namespace JobMetric\Unit;
 
+use Illuminate\Support\Facades\Blade;
 use JobMetric\PackageCore\Exceptions\MigrationFolderNotFoundException;
 use JobMetric\PackageCore\Exceptions\RegisterClassTypeNotFoundException;
 use JobMetric\PackageCore\PackageCore;
@@ -22,6 +23,18 @@ class UnitServiceProvider extends PackageCoreServiceProvider
             ->hasConfig()
             ->hasMigration()
             ->hasTranslation()
+            ->hasComponent()
             ->registerClass('Unit', Unit::class);
+    }
+
+    /**
+     * After Boot Package
+     *
+     * @return void
+     */
+    public function afterBootPackage(): void
+    {
+        // add alias for components
+        Blade::component('unit::components.unit', 'unit');
     }
 }
