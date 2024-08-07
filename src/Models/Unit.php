@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use JobMetric\PackageCore\Models\HasBooleanStatus;
+use JobMetric\Translation\Contracts\TranslationContract;
+use JobMetric\Translation\HasTranslation;
 
 /**
  * JobMetric\Unit\Models\Unit
@@ -25,9 +27,9 @@ use JobMetric\PackageCore\Models\HasBooleanStatus;
  * @method static Builder ofType(string $type)
  * @method static find(int $unit_id)
  */
-class Unit extends Model
+class Unit extends Model implements TranslationContract
 {
-    use HasFactory, SoftDeletes, HasBooleanStatus;
+    use HasFactory, SoftDeletes, HasBooleanStatus, HasTranslation;
 
     protected $fillable = [
         'type',
@@ -44,6 +46,16 @@ class Unit extends Model
     public function getTable()
     {
         return config('unit.tables.unit', parent::getTable());
+    }
+
+    public function translationAllowFields(): array
+    {
+        return [
+            'name',
+            'description',
+            'code',
+            'position',
+        ];
     }
 
     public function unitRelations(): HasMany
