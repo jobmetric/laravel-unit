@@ -37,7 +37,10 @@
         "laravel": {
             "providers": [
                 "JobMetric\\Unit\\UnitServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Unit": "JobMetric\\Unit\\Facades\\Unit"
+            }
         }
     },
     "minimum-stability": "stable",
