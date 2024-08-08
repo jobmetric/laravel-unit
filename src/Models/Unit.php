@@ -52,9 +52,9 @@ class Unit extends Model implements TranslationContract
     {
         return [
             'name',
-            'description',
             'code',
             'position',
+            'description',
         ];
     }
 
