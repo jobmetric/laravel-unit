@@ -35,7 +35,7 @@ class UpdateUnitRequest extends FormRequest
         }
 
         return [
-            'value' => 'sometimes|decimal:15',
+            'value' => 'sometimes|numeric',
             'status' => 'sometimes|boolean|nullable',
 
             'translation' => 'sometimes|array',
