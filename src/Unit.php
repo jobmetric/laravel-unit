@@ -277,7 +277,9 @@ class Unit
                     'ok' => false,
                     'message' => trans('unit::base.validation.errors'),
                     'errors' => [
-                        trans('unit::base.validation.object_not_found')
+                        'form' => [
+                            trans('unit::base.validation.object_not_found')
+                        ]
                     ],
                     'status' => 404
                 ];
@@ -289,7 +291,7 @@ class Unit
                         'ok' => false,
                         'message' => trans('unit::base.validation.errors'),
                         'errors' => [
-                            'form' => [
+                            'value' => [
                                 trans('unit::base.validation.unit_type_cannot_change_default_value')
                             ]
                         ],
