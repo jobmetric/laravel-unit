@@ -121,6 +121,94 @@ class UnitTest extends BaseUnit
      */
     public function test_update()
     {
+        // unit not found
+        $unit = Unit::update(1000, [
+            'value' => 1000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Kilogram',
+                'code' => 'kg',
+                'position' => 'left',
+                'description' => 'The kilogram is the base unit of mass in the International System of Units (SI).',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals($unit['errors'], [
+            'form' => [
+                trans('unit::base.validation.object_not_found')
+            ]
+        ]);
+        $this->assertEquals(404, $unit['status']);
+
+        // store a unit
+        $unitStore = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // update with duplicate value
+        $unit = Unit::update($unitStore['data']->id, [
+            'value' => 1000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Ounce',
+                'code' => 'oz',
+                'position' => 'left',
+                'description' => 'The ounce is a unit of mass.',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals($unit['errors'], [
+            'value' => [
+                trans('unit::base.validation.unit_type_cannot_change_default_value')
+            ]
+        ]);
+        $this->assertEquals(422, $unit['status']);
+
+        // update with another name
+        $unit = Unit::update($unitStore['data']->id, [
+            'status' => true,
+            'translation' => [
+                'name' => 'Ounce',
+                'code' => 'oz',
+                'position' => 'left',
+                'description' => 'The ounce is a unit of mass.',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertTrue($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.messages.updated'));
+        $this->assertInstanceOf(UnitResource::class, $unit['data']);
+        $this->assertEquals(200, $unit['status']);
+
+        $this->assertDatabaseHas('units', [
+            'id' => $unit['data']->id,
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+        ]);
+
+        $this->assertDatabaseHas('translations', [
+            'translatable_type' => 'JobMetric\Unit\Models\Unit',
+            'translatable_id' => $unit['data']->id,
+            'locale' => app()->getLocale(),
+            'key' => 'name',
+            'value' => 'Ounce',
+        ]);
     }
 
     /**
