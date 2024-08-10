@@ -214,8 +214,47 @@ class UnitTest extends BaseUnit
     /**
      * @throws Throwable
      */
-    public function test_show()
+    public function test_get()
     {
+        // store a unit
+        $unitStore = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // get the unit
+        $unit = Unit::get($unitStore['data']->id);
+
+        $this->assertIsArray($unit);
+        $this->assertTrue($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.messages.found'));
+        $this->assertInstanceOf(UnitResource::class, $unit['data']);
+        $this->assertEquals(200, $unit['status']);
+
+        $this->assertEquals($unit['data']->id, $unitStore['data']->id);
+        $this->assertEquals($unit['data']->type, UnitTypeEnum::WEIGHT());
+        $this->assertEquals(1, $unit['data']->value, 1);
+        $this->assertTrue($unit['data']->status);
+
+        // get the unit with a wrong id
+        $unit = Unit::get(1000);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals($unit['errors'], [
+            'form' => [
+                trans('unit::base.validation.object_not_found')
+            ]
+        ]);
+        $this->assertEquals(404, $unit['status']);
     }
 
     /**
