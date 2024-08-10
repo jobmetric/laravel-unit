@@ -186,6 +186,7 @@ class Unit
         }
 
         $unit_count_in_type = UnitModel::query()->where('type', $data['type'])->count();
+
         if ($unit_count_in_type == 0 && $data['value'] != 1) {
             return [
                 'ok' => false,
@@ -201,7 +202,7 @@ class Unit
             ];
         }
 
-        if ($unit_count_in_type > 1 && $data['value'] == 1) {
+        if ($unit_count_in_type >= 1 && $data['value'] == 1) {
             return [
                 'ok' => false,
                 'message' => trans('unit::base.validation.errors'),
