@@ -14,7 +14,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create(config('unit.tables.unit_relation'), function (Blueprint $table) {
-            $table->foreignId('unit_id')->index()->constrained('unit')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('unit_id')->index()->constrained(config('unit.tables.unit'))->cascadeOnUpdate()->cascadeOnDelete();
 
             $table->morphs('unitable');
             /**
@@ -22,6 +22,7 @@ return new class extends Migration {
              */
 
             $table->string('type')->index();
+            $table->decimal('value', 15, 8)->index();
 
             $table->dateTime('created_at')->index()->default(DB::raw('CURRENT_TIMESTAMP'));
 
