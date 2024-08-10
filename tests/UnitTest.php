@@ -2,6 +2,9 @@
 
 namespace JobMetric\Unit\Tests;
 
+use JobMetric\Unit\Enums\UnitTypeEnum;
+use JobMetric\Unit\Facades\Unit;
+use JobMetric\Unit\Http\Resources\UnitResource;
 use Throwable;
 
 class UnitTest extends BaseUnit
@@ -9,22 +12,108 @@ class UnitTest extends BaseUnit
     /**
      * @throws Throwable
      */
-    public function test_pagination()
-    {
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_all()
-    {
-    }
-
-    /**
-     * @throws Throwable
-     */
     public function test_store()
     {
+        // store without default value
+        $unit = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Kilogram',
+                'code' => 'kg',
+                'position' => 'left',
+                'description' => 'The kilogram is the base unit of mass in the International System of Units (SI).',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals($unit['errors'], [
+            'form' => [
+                trans('unit::base.validation.unit_type_default_value_error', [
+                    'unit' => UnitTypeEnum::WEIGHT()
+                ])
+            ]
+        ]);
+        $this->assertEquals(422, $unit['status']);
+
+        // store with default value
+        $unit = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertTrue($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.messages.created'));
+        $this->assertInstanceOf(UnitResource::class, $unit['data']);
+        $this->assertEquals(201, $unit['status']);
+
+        $this->assertDatabaseHas('units', [
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+        ]);
+
+        $this->assertDatabaseHas('translations', [
+            'translatable_type' => 'JobMetric\Unit\Models\Unit',
+            'translatable_id' => $unit['data']->id,
+            'locale' => app()->getLocale(),
+            'key' => 'name',
+            'value' => 'Gram',
+        ]);
+
+        // store duplicate default value
+        $unit = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Ounce',
+                'code' => 'oz',
+                'position' => 'left',
+                'description' => 'The ounce is a unit of mass.',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals($unit['errors'], [
+            'form' => [
+                trans('unit::base.validation.unit_type_use_default_value_error', [
+                    'unit' => UnitTypeEnum::WEIGHT()
+                ])
+            ]
+        ]);
+        $this->assertEquals(422, $unit['status']);
+
+        // store duplicate name
+        $unit = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals(422, $unit['status']);
     }
 
     /**
@@ -73,6 +162,20 @@ class UnitTest extends BaseUnit
      * @throws Throwable
      */
     public function test_force_delete()
+    {
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_pagination()
+    {
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_all()
     {
     }
 }
