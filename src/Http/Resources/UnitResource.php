@@ -16,6 +16,7 @@ use JobMetric\Unit\Models\UnitRelation;
  * @property mixed created_at
  * @property mixed updated_at
  *
+ * @property mixed translations
  * @property UnitRelation unitRelations
  */
 class UnitResource extends JsonResource
@@ -27,6 +28,8 @@ class UnitResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        global $translationLocale;
+
         return [
             'id' => $this->id,
             'type' => $this->type,
@@ -36,9 +39,7 @@ class UnitResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
-            'translation' => $this->whenLoaded('translation', function () {
-                return TranslationResource::collection($this->translation);
-            }),
+            'translations' => translationResourceData($this->translations, $translationLocale),
 
             'unitRelation' => $this->whenLoaded('unitRelation', function () {
                 return UnitRelationResource::collection($this->unitRelation);

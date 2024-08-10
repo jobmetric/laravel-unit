@@ -121,10 +121,11 @@ class Unit
      * @param int $unit_id
      * @param array $with
      * @param string|null $mode
+     * @param string|null $locale
      *
      * @return array
      */
-    public function get(int $unit_id, array $with = [], string $mode = null): array
+    public function get(int $unit_id, array $with = [], string $mode = null, string $locale = null): array
     {
         if ($mode === 'withTrashed') {
             $query = UnitModel::withTrashed();
@@ -140,6 +141,10 @@ class Unit
             $query->with($with);
         }
 
+        if (!in_array('translations', $with)) {
+            $query->with('translations');
+        }
+
         $unit = $query->first();
 
         if (!$unit) {
@@ -147,10 +152,17 @@ class Unit
                 'ok' => false,
                 'message' => trans('unit::base.validation.errors'),
                 'errors' => [
-                    trans('unit::base.validation.object_not_found')
+                    'form' => [
+                        trans('unit::base.validation.object_not_found')
+                    ]
                 ],
                 'status' => 404
             ];
+        }
+
+        global $translationLocale;
+        if(!is_null($locale)) {
+            $translationLocale = $locale;
         }
 
         return [
