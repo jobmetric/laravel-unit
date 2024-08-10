@@ -446,7 +446,9 @@ class Unit
                     'ok' => false,
                     'message' => trans('unit::base.validation.errors'),
                     'errors' => [
-                        trans('unit::base.validation.object_not_found')
+                        'form' => [
+                            trans('unit::base.validation.object_not_found')
+                        ]
                     ],
                     'status' => 404
                 ];
@@ -461,7 +463,7 @@ class Unit
             return [
                 'ok' => true,
                 'data' => $data,
-                'message' => trans('location::base.messages.permanently_deleted'),
+                'message' => trans('unit::base.messages.permanently_deleted'),
                 'status' => 200
             ];
         });
