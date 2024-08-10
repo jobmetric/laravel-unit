@@ -281,6 +281,46 @@ class UnitTest extends BaseUnit
      */
     public function test_restore()
     {
+        // store a unit
+        $unitStore = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // delete the unit
+        Unit::delete($unitStore['data']->id);
+
+        // restore the unit
+        $unit = Unit::restore($unitStore['data']->id);
+
+        $this->assertIsArray($unit);
+        $this->assertTrue($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.messages.restored'));
+        $this->assertEquals(200, $unit['status']);
+
+        $this->assertNotSoftDeleted('units', [
+            'id' => $unitStore['data']->id,
+        ]);
+
+        // restore the unit again
+        $unit = Unit::restore($unitStore['data']->id);
+
+        $this->assertIsArray($unit);
+        $this->assertFalse($unit['ok']);
+        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
+        $this->assertEquals($unit['errors'], [
+            'form' => [
+                trans('unit::base.validation.object_not_found')
+            ]
+        ]);
+        $this->assertEquals(404, $unit['status']);
     }
 
     /**

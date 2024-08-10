@@ -403,7 +403,9 @@ class Unit
                     'ok' => false,
                     'message' => trans('unit::base.validation.errors'),
                     'errors' => [
-                        trans('unit::base.validation.object_not_found')
+                        'form' => [
+                            trans('unit::base.validation.object_not_found')
+                        ]
                     ],
                     'status' => 404
                 ];
