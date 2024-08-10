@@ -29,7 +29,7 @@ class StoreUnitRequest extends FormRequest
     {
         return [
             'type' => 'required|string|in:' . implode(',', UnitTypeEnum::values()),
-            'value' => 'required|decimal:15',
+            'value' => 'required|numeric',
             'status' => 'boolean|nullable',
 
             'translation' => 'required|array',
