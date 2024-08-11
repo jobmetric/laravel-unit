@@ -18,6 +18,7 @@ return [
         "unit_type_default_value_error" => "The desired :unit unit must have a default value of 1 in the first step and you cannot enter another value",
         "unit_type_use_default_value_error" => "You have already entered the default value and you can no longer use the value 1",
         "unit_type_cannot_change_default_value" => "You cannot change the default value",
+        "unit_type_not_in_unit_allow_types" => "The desired unit type is not in the allowed unit types",
     ],
 
     "messages" => [
@@ -28,6 +29,9 @@ return [
         "restored" => "Unit restored successfully.",
         "permanently_deleted" => "Unit permanently deleted successfully.",
         "change_default_value" => "Default value changed successfully.",
+        "used_in" => "Unit used in :count places.",
+        "attached" => "Unit attached successfully.",
+        "detached" => "Unit detached successfully.",
     ],
 
     "exceptions" => [
