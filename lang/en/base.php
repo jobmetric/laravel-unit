@@ -37,6 +37,7 @@ return [
     "exceptions" => [
         "model_unit_contract_not_found" => "Model ':model' not implements 'JobMetric\Unit\Contracts\UnitContract' interface!",
         "unit_not_found" => "Unit :number not found!",
+        "type_not_found_in_allow_types" => "Type :type not found in allowed types!",
     ],
 
 ];

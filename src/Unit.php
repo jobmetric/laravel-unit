@@ -164,7 +164,7 @@ class Unit
         }
 
         global $translationLocale;
-        if(!is_null($locale)) {
+        if (!is_null($locale)) {
             $translationLocale = $locale;
         }
 

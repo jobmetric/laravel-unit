@@ -4,8 +4,11 @@ namespace JobMetric\Unit;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use JobMetric\Unit\Exceptions\ModelUnitContractNotFoundException;
+use JobMetric\Unit\Exceptions\TypeNotFoundInAllowTypesException;
+use JobMetric\Unit\Exceptions\UnitNotFoundException;
 use JobMetric\Unit\Http\Resources\UnitResource;
 use JobMetric\Unit\Models\Unit;
+use JobMetric\Unit\Models\UnitRelation;
 use Throwable;
 
 /**
@@ -89,6 +92,7 @@ trait HasUnit
             ];
         }
 
+        // @todo check duplicate type
         $this->units()->attach($unit_id, [
             'type' => $type,
             'value' => $value
@@ -145,8 +149,76 @@ trait HasUnit
      *
      * @return MorphToMany
      */
-    public function getMediaByType(string $type): MorphToMany
+    public function getUnitByType(string $type): MorphToMany
     {
         return $this->units()->wherePivot('type', $type);
+    }
+
+    /**
+     * Get unit value by type
+     *
+     * @param string $type
+     * @param int|null $convert_unit_id
+     *
+     * @return array
+     * @throws Throwable
+     */
+    public function getUnitValueByType(string $type, int $convert_unit_id = null): array
+    {
+        $unitAllowTypes = $this->unitAllowTypes();
+
+        if (!in_array($type, $unitAllowTypes)) {
+            throw new TypeNotFoundInAllowTypesException($type);
+        }
+
+        /**
+         * @var Unit $convert_unit
+         */
+        $convert_unit = null;
+
+        if ($convert_unit_id) {
+            $convert_unit = Unit::query()->where('id', $convert_unit_id)->first();
+
+            if (!$convert_unit) {
+                throw new UnitNotFoundException($convert_unit_id);
+            }
+
+            $convert_unit->withTranslations(app()->getLocale());
+        }
+
+        /**
+         * @var UnitRelation $unit_relation
+         */
+        $unit_relation = UnitRelation::query()
+            ->where('unitable_id', $this->id)
+            ->where('unitable_type', get_class($this))
+            ->where('type', $type)
+            ->first();
+
+        if (!$unit_relation) {
+            return [
+                'translation' => null,
+                'value' => null
+            ];
+        }
+
+        if (!$convert_unit_id) {
+            $convert_unit = Unit::query()->where('id', $unit_relation->unit_id)->first();
+
+            if (!$convert_unit) {
+                throw new UnitNotFoundException($unit_relation->unit_id);
+            }
+
+            $convert_unit->withTranslations(app()->getLocale());
+        }
+
+        $translation = translationResourceData($convert_unit->translations);
+
+        $value = $unit_relation->value;
+
+        return [
+            'translation' => $translation[app()->getLocale()],
+            'value' => \JobMetric\Unit\Facades\Unit::convert($unit_relation->unit_id, $convert_unit->id, $value)
+        ];
     }
 }
