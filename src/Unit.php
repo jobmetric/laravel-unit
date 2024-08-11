@@ -13,8 +13,10 @@ use JobMetric\Unit\Events\UnitStoreEvent;
 use JobMetric\Unit\Events\UnitUpdateEvent;
 use JobMetric\Unit\Http\Requests\StoreUnitRequest;
 use JobMetric\Unit\Http\Requests\UpdateUnitRequest;
+use JobMetric\Unit\Http\Resources\UnitRelationResource;
 use JobMetric\Unit\Http\Resources\UnitResource;
 use JobMetric\Unit\Models\Unit as UnitModel;
+use JobMetric\Unit\Models\UnitRelation;
 use Spatie\QueryBuilder\QueryBuilder;
 use Throwable;
 
@@ -100,7 +102,7 @@ class Unit
     }
 
     /**
-     * Get all location units.
+     * Get all units.
      *
      * @param array $filter
      * @param array $with
@@ -370,7 +372,7 @@ class Unit
             if (!$unit) {
                 return [
                     'ok' => false,
-                    'message' => trans('location::base.validation.errors'),
+                    'message' => trans('unit::base.validation.errors'),
                     'errors' => [
                         'form' => [
                             trans('unit::base.validation.object_not_found')
@@ -520,5 +522,71 @@ class Unit
                 'status' => 200
             ];
         });
+    }
+
+    /**
+     * Used In unit
+     *
+     * @param int $unit_id
+     *
+     * @return array
+     * @throws Throwable
+     */
+    public function usedIn(int $unit_id): array
+    {
+        /**
+         * @var UnitModel $unit
+         */
+        $unit = UnitModel::withTrashed()->find($unit_id);
+
+        if (!$unit) {
+            return [
+                'ok' => false,
+                'message' => trans('unit::base.validation.errors'),
+                'errors' => [
+                    'form' => [
+                        trans('unit::base.validation.object_not_found')
+                    ]
+                ],
+                'status' => 404
+            ];
+        }
+
+        $unit_relations = UnitRelation::query()->where([
+            'unit_id' => $unit_id
+        ])->get();
+
+        return [
+            'ok' => true,
+            'message' => trans('unit::base.messages.used_in', [
+                'count' => $unit_relations->count()
+            ]),
+            'data' => UnitRelationResource::collection($unit_relations),
+            'status' => 200
+        ];
+    }
+
+    /**
+     * Has Used unit
+     *
+     * @param int $unit_id
+     *
+     * @return bool
+     * @throws Throwable
+     */
+    public function hasUsed(int $unit_id): bool
+    {
+        /**
+         * @var UnitModel $unit
+         */
+        $unit = UnitModel::withTrashed()->find($unit_id);
+
+        if (!$unit) {
+            return false;
+        }
+
+        return UnitRelation::query()->where([
+            'unit_id' => $unit_id
+        ])->exists();
     }
 }
