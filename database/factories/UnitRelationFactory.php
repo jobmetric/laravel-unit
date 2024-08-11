@@ -23,7 +23,8 @@ class UnitRelationFactory extends Factory
             'unit_id' => null,
             'unitable_type' => null,
             'unitable_id' => null,
-            'type' => null
+            'type' => null,
+            'value' => $this->faker->randomNumber(3)
         ];
     }
 
@@ -68,6 +69,20 @@ class UnitRelationFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'type' => $type
+        ]);
+    }
+
+    /**
+     * set value
+     *
+     * @param float $value
+     *
+     * @return static
+     */
+    public function setValue(float $value): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'value' => $value
         ]);
     }
 }
