@@ -16,6 +16,7 @@ use JobMetric\Unit\Events\UnitableResourceEvent;
  * @property mixed unitable_type
  * @property mixed unitable_id
  * @property mixed type
+ * @property mixed value
  * @property mixed created_at
  *
  * @property Unit unit
@@ -34,7 +35,8 @@ class UnitRelation extends Pivot
         'unit_id',
         'unitable_type',
         'unitable_id',
-        'type'
+        'type',
+        'value'
     ];
 
     /**
@@ -46,7 +48,8 @@ class UnitRelation extends Pivot
         'unit_id' => 'integer',
         'unitable_type' => 'string',
         'unitable_id' => 'integer',
-        'type' => 'string'
+        'type' => 'string',
+        'value' => 'float',
     ];
 
     public function getTable()
