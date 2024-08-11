@@ -535,4 +535,61 @@ class UnitTest extends BaseUnit
 
         $this->assertTrue($usedIn);
     }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_convert()
+    {
+        // Store a unit
+        $unitStore = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // Store another unit
+        $unitStore2 = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Kilogram',
+                'code' => 'kg',
+                'position' => 'left',
+                'description' => 'The kilogram is the base unit of mass in the International System of Units (SI).',
+            ],
+        ]);
+
+        // Store another unit
+        $unitStore3 = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1000000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Ton',
+                'code' => 't',
+                'position' => 'left',
+                'description' => 'The ton is a unit of weight.',
+            ],
+        ]);
+
+        // Convert the unit
+        $convert = Unit::convert($unitStore2['data']->id, $unitStore3['data']->id, 2);
+
+        $this->assertIsFloat($convert);
+        $this->assertEquals(0.002, $convert);
+
+        // Convert the unit
+        $convert = Unit::convert($unitStore['data']->id, $unitStore2['data']->id, 50);
+
+        $this->assertIsFloat($convert);
+        $this->assertEquals(0.05, $convert);
+    }
 }

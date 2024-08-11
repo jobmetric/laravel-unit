@@ -11,6 +11,7 @@ use JobMetric\Unit\Events\UnitForceDeleteEvent;
 use JobMetric\Unit\Events\UnitRestoreEvent;
 use JobMetric\Unit\Events\UnitStoreEvent;
 use JobMetric\Unit\Events\UnitUpdateEvent;
+use JobMetric\Unit\Exceptions\UnitNotFoundException;
 use JobMetric\Unit\Http\Requests\StoreUnitRequest;
 use JobMetric\Unit\Http\Requests\UpdateUnitRequest;
 use JobMetric\Unit\Http\Resources\UnitRelationResource;
@@ -588,5 +589,38 @@ class Unit
         return UnitRelation::query()->where([
             'unit_id' => $unit_id
         ])->exists();
+    }
+
+    /**
+     * Convert unit
+     *
+     * @param int $from_unit_id
+     * @param int $to_unit_id
+     * @param float $value
+     *
+     * @return float
+     * @throws Throwable
+     */
+    public function convert(int $from_unit_id, int $to_unit_id, float $value): float
+    {
+        /**
+         * @var UnitModel $from_unit
+         */
+        $from_unit = UnitModel::query()->find($from_unit_id);
+
+        if (!$from_unit) {
+            throw new UnitNotFoundException($from_unit_id);
+        }
+
+        /**
+         * @var UnitModel $to_unit
+         */
+        $to_unit = UnitModel::query()->find($to_unit_id);
+
+        if (!$to_unit) {
+            throw new UnitNotFoundException($to_unit_id);
+        }
+
+        return $value * $from_unit->value / $to_unit->value;
     }
 }

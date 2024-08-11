@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array changeDefaultValue(int $unit_id)
  * @method static array usedIn(int $unit_id)
  * @method static bool hasUsed(int $unit_id)
+ * @method static float convert(int $from_unit_id, int $to_unit_id, float $value)
  *
  * @see \JobMetric\Unit\Unit
  */
