@@ -11,6 +11,7 @@ use JobMetric\Unit\Models\Unit;
  * @property mixed unitable_id
  * @property mixed unitable_type
  * @property mixed type
+ * @property mixed value
  * @property mixed created_at
  *
  * @property Unit unit
@@ -31,6 +32,7 @@ class UnitRelationResource extends JsonResource
             'unitable_id' => $this->unitable_id,
             'unitable_type' => $this->unitable_type,
             'type' => $this->type,
+            'value' => $this->value,
             'created_at' => $this->created_at,
 
             'unit' => $this->whenLoaded('unit', function () {
