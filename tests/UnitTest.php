@@ -4,6 +4,7 @@ namespace JobMetric\Unit\Tests;
 
 use JobMetric\Unit\Enums\UnitTypeEnum;
 use JobMetric\Unit\Facades\Unit;
+use JobMetric\Unit\Http\Resources\UnitRelationResource;
 use JobMetric\Unit\Http\Resources\UnitResource;
 use Throwable;
 
@@ -260,20 +261,6 @@ class UnitTest extends BaseUnit
     /**
      * @throws Throwable
      */
-    public function test_used_in()
-    {
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_has_used()
-    {
-    }
-
-    /**
-     * @throws Throwable
-     */
     public function test_delete()
     {
         // store a unit
@@ -412,14 +399,140 @@ class UnitTest extends BaseUnit
     /**
      * @throws Throwable
      */
-    public function test_pagination()
+    public function test_all()
     {
+        // Store a unit
+        Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // Get the units
+        $getUnits = Unit::all();
+
+        $this->assertCount(1, $getUnits);
+
+        $getUnits->each(function ($unit) {
+            $this->assertInstanceOf(UnitResource::class, $unit);
+        });
     }
 
     /**
      * @throws Throwable
      */
-    public function test_all()
+    public function test_pagination()
     {
+        // Store a unit
+        Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // Paginate the units
+        $paginateUnits = Unit::paginate();
+
+        $this->assertCount(1, $paginateUnits);
+
+        $paginateUnits->each(function ($unit) {
+            $this->assertInstanceOf(UnitResource::class, $unit);
+        });
+
+        $this->assertIsInt($paginateUnits->total());
+        $this->assertIsInt($paginateUnits->perPage());
+        $this->assertIsInt($paginateUnits->currentPage());
+        $this->assertIsInt($paginateUnits->lastPage());
+        $this->assertIsArray($paginateUnits->items());
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_used_in()
+    {
+        $product = $this->create_product();
+
+        // Store a unit
+        $unitStore = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // Attach the unit to the product
+        $attachUnit = $product->attachUnit($unitStore['data']->id, UnitTypeEnum::WEIGHT(), 300);
+
+        $this->assertIsArray($attachUnit);
+        $this->assertTrue($attachUnit['ok']);
+        $this->assertEquals($attachUnit['message'], trans('unit::base.messages.attached'));
+        $this->assertInstanceOf(UnitResource::class, $attachUnit['data']);
+        $this->assertEquals(200, $attachUnit['status']);
+
+        // Get the unit used in the product
+        $usedIn = Unit::usedIn($unitStore['data']->id);
+
+        $this->assertIsArray($usedIn);
+        $this->assertTrue($usedIn['ok']);
+        $this->assertEquals($usedIn['message'], trans('unit::base.messages.used_in', [
+            'count' => 1
+        ]));
+        $usedIn['data']->each(function ($dataUsedIn) {
+            $this->assertInstanceOf(UnitRelationResource::class, $dataUsedIn);
+        });
+        $this->assertEquals(200, $usedIn['status']);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function test_has_used()
+    {
+        $product = $this->create_product();
+
+        // Store a unit
+        $unitStore = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1,
+            'status' => true,
+            'translation' => [
+                'name' => 'Gram',
+                'code' => 'g',
+                'position' => 'left',
+                'description' => 'The gram is a metric system unit of mass.',
+            ],
+        ]);
+
+        // Attach the unit to the product
+        $attachUnit = $product->attachUnit($unitStore['data']->id, UnitTypeEnum::WEIGHT(), 300);
+
+        $this->assertIsArray($attachUnit);
+        $this->assertTrue($attachUnit['ok']);
+        $this->assertEquals($attachUnit['message'], trans('unit::base.messages.attached'));
+        $this->assertInstanceOf(UnitResource::class, $attachUnit['data']);
+        $this->assertEquals(200, $attachUnit['status']);
+
+        // check has used in
+        $usedIn = Unit::hasUsed($unitStore['data']->id);
+
+        $this->assertTrue($usedIn);
     }
 }
