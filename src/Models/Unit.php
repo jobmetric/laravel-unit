@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use JobMetric\PackageCore\Models\HasBooleanStatus;
 use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
@@ -18,7 +17,6 @@ use JobMetric\Translation\HasTranslation;
  * @property mixed type
  * @property mixed value
  * @property mixed status
- * @property mixed deleted_at
  * @property mixed created_at
  * @property mixed updated_at
  *
@@ -29,7 +27,7 @@ use JobMetric\Translation\HasTranslation;
  */
 class Unit extends Model implements TranslationContract
 {
-    use HasFactory, SoftDeletes, HasBooleanStatus, HasTranslation;
+    use HasFactory, HasBooleanStatus, HasTranslation;
 
     protected $fillable = [
         'type',

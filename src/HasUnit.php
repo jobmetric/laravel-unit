@@ -64,7 +64,7 @@ trait HasUnit
         /**
          * @var Unit $unit
          */
-        $unit = Unit::withTrashed()->find($unit_id);
+        $unit = Unit::find($unit_id);
 
         if (!$unit) {
             throw new UnitNotFoundException($unit_id);

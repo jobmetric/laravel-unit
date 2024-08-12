@@ -3,10 +3,12 @@
 namespace JobMetric\Unit\Tests;
 
 use JobMetric\Unit\Enums\UnitTypeEnum;
+use JobMetric\Unit\Exceptions\CannotDeleteDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
 use JobMetric\Unit\Exceptions\UnitTypeCannotChangeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeUseDefaultValueException;
+use JobMetric\Unit\Exceptions\UnitTypeUsedInException;
 use JobMetric\Unit\Facades\Unit;
 use JobMetric\Unit\Http\Resources\UnitRelationResource;
 use JobMetric\Unit\Http\Resources\UnitResource;
@@ -243,8 +245,8 @@ class UnitTest extends BaseUnit
      */
     public function test_delete()
     {
-        // store a unit
-        $unitStore = Unit::store([
+        // store gram unit
+        $unitStoreGram = Unit::store([
             'type' => UnitTypeEnum::WEIGHT(),
             'value' => 1,
             'status' => true,
@@ -256,111 +258,61 @@ class UnitTest extends BaseUnit
             ],
         ]);
 
-        // delete the unit
-        $unit = Unit::delete($unitStore['data']->id);
+        // store kilogram unit
+        $unitStoreKilogram = Unit::store([
+            'type' => UnitTypeEnum::WEIGHT(),
+            'value' => 1000,
+            'status' => true,
+            'translation' => [
+                'name' => 'Kilogram',
+                'code' => 'kg',
+                'position' => 'left',
+                'description' => 'The kilogram is the base unit of mass in the International System of Units (SI).',
+            ],
+        ]);
+
+        // delete the default unit
+        try {
+            $unit = Unit::delete($unitStoreGram['data']->id);
+
+            $this->assertIsArray($unit);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(CannotDeleteDefaultValueException::class, $e);
+        }
+
+        // delete the kilogram unit
+        $unit = Unit::delete($unitStoreKilogram['data']->id);
 
         $this->assertIsArray($unit);
         $this->assertTrue($unit['ok']);
         $this->assertEquals($unit['message'], trans('unit::base.messages.deleted'));
         $this->assertEquals(200, $unit['status']);
 
-        $this->assertSoftDeleted('units', [
-            'id' => $unitStore['data']->id,
-        ]);
-
-        // delete the unit again
-        try {
-            $unit = Unit::delete($unitStore['data']->id);
-
-            $this->assertIsArray($unit);
-        } catch (Throwable $e) {
-            $this->assertInstanceOf(UnitNotFoundException::class, $e);
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_restore()
-    {
-        // store a unit
-        $unitStore = Unit::store([
-            'type' => UnitTypeEnum::WEIGHT(),
-            'value' => 1,
-            'status' => true,
-            'translation' => [
-                'name' => 'Gram',
-                'code' => 'g',
-                'position' => 'left',
-                'description' => 'The gram is a metric system unit of mass.',
-            ],
-        ]);
-
-        // delete the unit
-        Unit::delete($unitStore['data']->id);
-
-        // restore the unit
-        $unit = Unit::restore($unitStore['data']->id);
-
-        $this->assertIsArray($unit);
-        $this->assertTrue($unit['ok']);
-        $this->assertEquals($unit['message'], trans('unit::base.messages.restored'));
-        $this->assertEquals(200, $unit['status']);
-
-        $this->assertNotSoftDeleted('units', [
-            'id' => $unitStore['data']->id,
-        ]);
-
-        // restore the unit again
-        try {
-            $unit = Unit::restore($unitStore['data']->id);
-
-            $this->assertIsArray($unit);
-        } catch (Throwable $e) {
-            $this->assertInstanceOf(UnitNotFoundException::class, $e);
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function test_force_delete()
-    {
-        // store a unit
-        $unitStore = Unit::store([
-            'type' => UnitTypeEnum::WEIGHT(),
-            'value' => 1,
-            'status' => true,
-            'translation' => [
-                'name' => 'Gram',
-                'code' => 'g',
-                'position' => 'left',
-                'description' => 'The gram is a metric system unit of mass.',
-            ],
-        ]);
-
-        // delete the unit
-        Unit::delete($unitStore['data']->id);
-
-        // force deletes the unit
-        $unit = Unit::forceDelete($unitStore['data']->id);
-
-        $this->assertIsArray($unit);
-        $this->assertTrue($unit['ok']);
-        $this->assertEquals($unit['message'], trans('unit::base.messages.permanently_deleted'));
-        $this->assertEquals(200, $unit['status']);
-
         $this->assertDatabaseMissing('units', [
-            'id' => $unitStore['data']->id,
+            'id' => $unitStoreKilogram['data']->id,
         ]);
 
-        // force deletes the unit again
+        // delete the kilogram unit again
         try {
-            $unit = Unit::forceDelete($unitStore['data']->id);
+            $unit = Unit::delete($unitStoreKilogram['data']->id);
 
             $this->assertIsArray($unit);
         } catch (Throwable $e) {
             $this->assertInstanceOf(UnitNotFoundException::class, $e);
+        }
+
+        // attach the unit to the product
+        $product = $this->create_product();
+
+        $product->attachUnit($unitStoreGram['data']->id, UnitTypeEnum::WEIGHT(), 300);
+
+        // delete the unit
+        try {
+            $unit = Unit::delete($unitStoreGram['data']->id);
+
+            $this->assertIsArray($unit);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitTypeUsedInException::class, $e);
         }
     }
 

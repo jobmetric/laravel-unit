@@ -7,14 +7,14 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use JobMetric\Unit\Events\UnitDeleteEvent;
-use JobMetric\Unit\Events\UnitForceDeleteEvent;
-use JobMetric\Unit\Events\UnitRestoreEvent;
 use JobMetric\Unit\Events\UnitStoreEvent;
 use JobMetric\Unit\Events\UnitUpdateEvent;
+use JobMetric\Unit\Exceptions\CannotDeleteDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
 use JobMetric\Unit\Exceptions\UnitTypeCannotChangeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeUseDefaultValueException;
+use JobMetric\Unit\Exceptions\UnitTypeUsedInException;
 use JobMetric\Unit\Http\Requests\StoreUnitRequest;
 use JobMetric\Unit\Http\Requests\UpdateUnitRequest;
 use JobMetric\Unit\Http\Resources\UnitRelationResource;
@@ -50,11 +50,10 @@ class Unit
      *
      * @param array $filter
      * @param array $with
-     * @param string|null $mode
      *
      * @return QueryBuilder
      */
-    public function query(array $filter = [], array $with = [], string $mode = null): QueryBuilder
+    public function query(array $filter = [], array $with = []): QueryBuilder
     {
         $fields = [
             'id',
@@ -65,17 +64,8 @@ class Unit
             'updated_at'
         ];
 
-        $query = QueryBuilder::for(UnitModel::class);
-
-        if ($mode === 'withTrashed') {
-            $query->withTrashed();
-        }
-
-        if ($mode === 'onlyTrashed') {
-            $query->onlyTrashed();
-        }
-
-        $query->allowedFields($fields)
+        $query = QueryBuilder::for(UnitModel::class)
+            ->allowedFields($fields)
             ->allowedSorts($fields)
             ->allowedFilters($fields)
             ->defaultSort('-id')
@@ -94,14 +84,13 @@ class Unit
      * @param array $filter
      * @param int $page_limit
      * @param array $with
-     * @param string|null $mode
      *
      * @return AnonymousResourceCollection
      */
-    public function paginate(array $filter = [], int $page_limit = 15, array $with = [], string $mode = null): AnonymousResourceCollection
+    public function paginate(array $filter = [], int $page_limit = 15, array $with = []): AnonymousResourceCollection
     {
         return UnitResource::collection(
-            $this->query($filter, $with, $mode)->paginate($page_limit)
+            $this->query($filter, $with)->paginate($page_limit)
         );
     }
 
@@ -110,14 +99,13 @@ class Unit
      *
      * @param array $filter
      * @param array $with
-     * @param string|null $mode
      *
      * @return AnonymousResourceCollection
      */
-    public function all(array $filter = [], array $with = [], string $mode = null): AnonymousResourceCollection
+    public function all(array $filter = [], array $with = []): AnonymousResourceCollection
     {
         return UnitResource::collection(
-            $this->query($filter, $with, $mode)->get()
+            $this->query($filter, $with)->get()
         );
     }
 
@@ -126,23 +114,15 @@ class Unit
      *
      * @param int $unit_id
      * @param array $with
-     * @param string|null $mode
      * @param string|null $locale
      *
      * @return array
      * @throws Throwable
      */
-    public function get(int $unit_id, array $with = [], string $mode = null, string $locale = null): array
+    public function get(int $unit_id, array $with = [], string $locale = null): array
     {
-        if ($mode === 'withTrashed') {
-            $query = UnitModel::withTrashed();
-        } else if ($mode === 'onlyTrashed') {
-            $query = UnitModel::onlyTrashed();
-        } else {
-            $query = UnitModel::query();
-        }
-
-        $query->where('id', $unit_id);
+        $query = UnitModel::query()
+            ->where('id', $unit_id);
 
         if (!empty($with)) {
             $query->with($with);
@@ -237,6 +217,7 @@ class Unit
      * @param array $data
      *
      * @return array
+     * @throws Throwable
      */
     public function update(int $unit_id, array $data): array
     {
@@ -258,7 +239,7 @@ class Unit
             /**
              * @var UnitModel $unit
              */
-            $unit = UnitModel::query()->where('id', $unit_id)->first();
+            $unit = UnitModel::find($unit_id);
 
             if (!$unit) {
                 throw new UnitNotFoundException($unit_id);
@@ -316,6 +297,7 @@ class Unit
      * @param int $unit_id
      *
      * @return array
+     * @throws Throwable
      */
     public function delete(int $unit_id): array
     {
@@ -323,15 +305,35 @@ class Unit
             /**
              * @var UnitModel $unit
              */
-            $unit = UnitModel::query()->where('id', $unit_id)->first();
+            $unit = UnitModel::find($unit_id);
 
             if (!$unit) {
                 throw new UnitNotFoundException($unit_id);
             }
 
+            $check_used = $this->hasUsed($unit_id);
+
+            if ($check_used) {
+                $count = UnitRelation::query()->where([
+                    'unit_id' => $unit_id
+                ])->count();
+
+                throw new UnitTypeUsedInException($unit_id, $count);
+            }
+
+            if ($unit->value == 1) {
+                $unit_count = UnitModel::query()->where('type', $unit->type)->count();
+
+                if ($unit_count > 1) {
+                    throw new CannotDeleteDefaultValueException;
+                }
+            }
+
             event(new UnitDeleteEvent($unit));
 
             $data = UnitResource::make($unit);
+
+            $unit->translations()->delete();
 
             $unit->delete();
 
@@ -339,74 +341,6 @@ class Unit
                 'ok' => true,
                 'data' => $data,
                 'message' => trans('unit::base.messages.deleted'),
-                'status' => 200
-            ];
-        });
-    }
-
-    /**
-     * Restore the specified unit.
-     *
-     * @param int $unit_id
-     *
-     * @return array
-     */
-    public function restore(int $unit_id): array
-    {
-        return DB::transaction(function () use ($unit_id) {
-            /**
-             * @var UnitModel $unit
-             */
-            $unit = UnitModel::onlyTrashed()->where('id', $unit_id)->first();
-
-            if (!$unit) {
-                throw new UnitNotFoundException($unit_id);
-            }
-
-            event(new UnitRestoreEvent($unit));
-
-            $data = UnitResource::make($unit);
-
-            $unit->restore();
-
-            return [
-                'ok' => true,
-                'data' => $data,
-                'message' => trans('unit::base.messages.restored'),
-                'status' => 200
-            ];
-        });
-    }
-
-    /**
-     * Force delete the specified unit.
-     *
-     * @param int $unit_id
-     *
-     * @return array
-     */
-    public function forceDelete(int $unit_id): array
-    {
-        return DB::transaction(function () use ($unit_id) {
-            /**
-             * @var UnitModel $unit
-             */
-            $unit = UnitModel::onlyTrashed()->where('id', $unit_id)->first();
-
-            if (!$unit) {
-                throw new UnitNotFoundException($unit_id);
-            }
-
-            event(new UnitForceDeleteEvent($unit));
-
-            $data = UnitResource::make($unit);
-
-            $unit->forceDelete();
-
-            return [
-                'ok' => true,
-                'data' => $data,
-                'message' => trans('unit::base.messages.permanently_deleted'),
                 'status' => 200
             ];
         });
@@ -426,7 +360,7 @@ class Unit
             /**
              * @var UnitModel $unit
              */
-            $unit = UnitModel::query()->where('id', $unit_id)->first();
+            $unit = UnitModel::find($unit_id);
 
             if (!$unit) {
                 throw new UnitNotFoundException($unit_id);
@@ -460,7 +394,7 @@ class Unit
         /**
          * @var UnitModel $unit
          */
-        $unit = UnitModel::withTrashed()->find($unit_id);
+        $unit = UnitModel::find($unit_id);
 
         if (!$unit) {
             throw new UnitNotFoundException($unit_id);
@@ -493,7 +427,7 @@ class Unit
         /**
          * @var UnitModel $unit
          */
-        $unit = UnitModel::withTrashed()->find($unit_id);
+        $unit = UnitModel::find($unit_id);
 
         if (!$unit) {
             throw new UnitNotFoundException($unit_id);
@@ -519,7 +453,7 @@ class Unit
         /**
          * @var UnitModel $from_unit
          */
-        $from_unit = UnitModel::query()->find($from_unit_id);
+        $from_unit = UnitModel::find($from_unit_id);
 
         if (!$from_unit) {
             throw new UnitNotFoundException($from_unit_id);
@@ -528,7 +462,7 @@ class Unit
         /**
          * @var UnitModel $to_unit
          */
-        $to_unit = UnitModel::query()->find($to_unit_id);
+        $to_unit = UnitModel::find($to_unit_id);
 
         if (!$to_unit) {
             throw new UnitNotFoundException($to_unit_id);

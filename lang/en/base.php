@@ -21,8 +21,6 @@ return [
         "created" => "Unit created successfully.",
         "updated" => "Unit updated successfully.",
         "deleted" => "Unit deleted successfully.",
-        "restored" => "Unit restored successfully.",
-        "permanently_deleted" => "Unit permanently deleted successfully.",
         "change_default_value" => "Default value changed successfully.",
         "used_in" => "Unit used in ':count' places.",
         "attached" => "Unit attached successfully.",
@@ -37,6 +35,8 @@ return [
         "unit_type_use_default_value" => "You have already entered the default value and you can no longer use the value 1",
         "unit_type_cannot_change_default_value" => "You cannot change the default value",
         "unit_type_not_in_unit_allow_types" => "Unit type ':type' not in unit allow types!",
+        "unit_type_used_in" => "Unit number ':unit_id' used in ':number' places!",
+        "cannot_delete_default_value" => "You cannot remove the default value until other items have been removed!",
     ],
 
 ];

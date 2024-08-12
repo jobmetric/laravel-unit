@@ -4,7 +4,6 @@ namespace JobMetric\Unit\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use JobMetric\Translation\Http\Resources\TranslationResource;
 use JobMetric\Unit\Models\UnitRelation;
 
 /**
@@ -12,7 +11,6 @@ use JobMetric\Unit\Models\UnitRelation;
  * @property mixed type
  * @property mixed value
  * @property mixed status
- * @property mixed deleted_at
  * @property mixed created_at
  * @property mixed updated_at
  *
@@ -35,7 +33,6 @@ class UnitResource extends JsonResource
             'type' => $this->type,
             'value' => $this->value,
             'status' => $this->status,
-            'deleted_at' => $this->deleted_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
