@@ -246,17 +246,13 @@ class UnitTest extends BaseUnit
         $this->assertTrue($unit['data']->status);
 
         // get the unit with a wrong id
-        $unit = Unit::get(1000);
+        try {
+            $unit = Unit::get(1000);
 
-        $this->assertIsArray($unit);
-        $this->assertFalse($unit['ok']);
-        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
-        $this->assertEquals($unit['errors'], [
-            'form' => [
-                trans('unit::base.validation.object_not_found')
-            ]
-        ]);
-        $this->assertEquals(404, $unit['status']);
+            $this->assertIsArray($unit);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitNotFoundException::class, $e);
+        }
     }
 
     /**

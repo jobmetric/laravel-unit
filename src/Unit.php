@@ -127,6 +127,7 @@ class Unit
      * @param string|null $locale
      *
      * @return array
+     * @throws Throwable
      */
     public function get(int $unit_id, array $with = [], string $mode = null, string $locale = null): array
     {
@@ -151,16 +152,7 @@ class Unit
         $unit = $query->first();
 
         if (!$unit) {
-            return [
-                'ok' => false,
-                'message' => trans('unit::base.validation.errors'),
-                'errors' => [
-                    'form' => [
-                        trans('unit::base.validation.object_not_found')
-                    ]
-                ],
-                'status' => 404
-            ];
+            throw new UnitNotFoundException($unit_id);
         }
 
         global $translationLocale;
