@@ -12,6 +12,8 @@ use JobMetric\Unit\Events\UnitRestoreEvent;
 use JobMetric\Unit\Events\UnitStoreEvent;
 use JobMetric\Unit\Events\UnitUpdateEvent;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
+use JobMetric\Unit\Exceptions\UnitTypeDefaultValueException;
+use JobMetric\Unit\Exceptions\UnitTypeUseDefaultValueException;
 use JobMetric\Unit\Http\Requests\StoreUnitRequest;
 use JobMetric\Unit\Http\Requests\UpdateUnitRequest;
 use JobMetric\Unit\Http\Resources\UnitRelationResource;
@@ -195,33 +197,11 @@ class Unit
         $unit_count_in_type = UnitModel::query()->where('type', $data['type'])->count();
 
         if ($unit_count_in_type == 0 && $data['value'] != 1) {
-            return [
-                'ok' => false,
-                'message' => trans('unit::base.validation.errors'),
-                'errors' => [
-                    'form' => [
-                        trans('unit::base.validation.unit_type_default_value_error', [
-                            'unit' => $data['type']
-                        ])
-                    ]
-                ],
-                'status' => 422
-            ];
+            throw new UnitTypeDefaultValueException($data['type']);
         }
 
         if ($unit_count_in_type >= 1 && $data['value'] == 1) {
-            return [
-                'ok' => false,
-                'message' => trans('unit::base.validation.errors'),
-                'errors' => [
-                    'form' => [
-                        trans('unit::base.validation.unit_type_use_default_value_error', [
-                            'unit' => $data['type']
-                        ])
-                    ]
-                ],
-                'status' => 422
-            ];
+            throw new UnitTypeUseDefaultValueException($data['type']);
         }
 
         return DB::transaction(function () use ($data) {

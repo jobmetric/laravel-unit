@@ -15,8 +15,6 @@ return [
     "validation" => [
         "errors" => "Validation errors occurred.",
         "object_not_found" => "Unit not found!",
-        "unit_type_default_value_error" => "The desired :unit unit must have a default value of 1 in the first step and you cannot enter another value",
-        "unit_type_use_default_value_error" => "You have already entered the default value and you can no longer use the value 1",
         "unit_type_cannot_change_default_value" => "You cannot change the default value",
         "unit_type_not_in_unit_allow_types" => "The desired unit type is not in the allowed unit types",
     ],
@@ -38,6 +36,8 @@ return [
         "model_unit_contract_not_found" => "Model ':model' not implements 'JobMetric\Unit\Contracts\UnitContract' interface!",
         "unit_not_found" => "Unit :number not found!",
         "type_not_found_in_allow_types" => "Type :type not found in allowed types!",
+        "unit_type_default_value" => "The desired :unit unit must have a default value of 1 in the first step and you cannot enter another value",
+        "unit_type_use_default_value" => "You have already entered the default value and you can no longer use the value 1",
     ],
 
 ];
