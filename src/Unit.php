@@ -490,6 +490,7 @@ class Unit
      * @param int $unit_id
      *
      * @return array
+     * @throws Throwable
      */
     public function changeDefaultValue(int $unit_id): array
     {
@@ -500,14 +501,7 @@ class Unit
             $unit = UnitModel::query()->where('id', $unit_id)->first();
 
             if (!$unit) {
-                return [
-                    'ok' => false,
-                    'message' => trans('unit::base.validation.errors'),
-                    'errors' => [
-                        trans('unit::base.validation.object_not_found')
-                    ],
-                    'status' => 404
-                ];
+                throw new UnitNotFoundException($unit_id);
             }
 
             UnitModel::query()->where('type', $unit->type)->get()->each(function (UnitModel $item) use ($unit) {
