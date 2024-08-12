@@ -76,9 +76,12 @@ trait HasUnit
             throw new UnitTypeNotInUnitAllowTypesException($type);
         }
 
-        // @todo check duplicate type
-        $this->units()->attach($unit_id, [
-            'type' => $type,
+        UnitRelation::query()->updateOrInsert([
+            'unitable_id' => $this->id,
+            'unitable_type' => get_class($this),
+            'type' => $type
+        ], [
+            'unit_id' => $unit_id,
             'value' => $value
         ]);
 
