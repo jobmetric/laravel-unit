@@ -463,16 +463,7 @@ class Unit
         $unit = UnitModel::withTrashed()->find($unit_id);
 
         if (!$unit) {
-            return [
-                'ok' => false,
-                'message' => trans('unit::base.validation.errors'),
-                'errors' => [
-                    'form' => [
-                        trans('unit::base.validation.object_not_found')
-                    ]
-                ],
-                'status' => 404
-            ];
+            throw new UnitNotFoundException($unit_id);
         }
 
         $unit_relations = UnitRelation::query()->where([
