@@ -12,6 +12,7 @@ use JobMetric\Unit\Events\UnitRestoreEvent;
 use JobMetric\Unit\Events\UnitStoreEvent;
 use JobMetric\Unit\Events\UnitUpdateEvent;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
+use JobMetric\Unit\Exceptions\UnitTypeCannotChangeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeUseDefaultValueException;
 use JobMetric\Unit\Http\Requests\StoreUnitRequest;
@@ -260,30 +261,12 @@ class Unit
             $unit = UnitModel::query()->where('id', $unit_id)->first();
 
             if (!$unit) {
-                return [
-                    'ok' => false,
-                    'message' => trans('unit::base.validation.errors'),
-                    'errors' => [
-                        'form' => [
-                            trans('unit::base.validation.object_not_found')
-                        ]
-                    ],
-                    'status' => 404
-                ];
+                throw new UnitNotFoundException($unit_id);
             }
 
             if (array_key_exists('value', $data)) {
                 if ($unit->value == 1 && $data['value'] != 1) {
-                    return [
-                        'ok' => false,
-                        'message' => trans('unit::base.validation.errors'),
-                        'errors' => [
-                            'value' => [
-                                trans('unit::base.validation.unit_type_cannot_change_default_value')
-                            ]
-                        ],
-                        'status' => 422
-                    ];
+                    throw new UnitTypeCannotChangeDefaultValueException;
                 }
 
                 $unit->value = $data['value'];

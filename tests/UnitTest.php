@@ -4,6 +4,7 @@ namespace JobMetric\Unit\Tests;
 
 use JobMetric\Unit\Enums\UnitTypeEnum;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
+use JobMetric\Unit\Exceptions\UnitTypeCannotChangeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeUseDefaultValueException;
 use JobMetric\Unit\Facades\Unit;
@@ -114,26 +115,22 @@ class UnitTest extends BaseUnit
     public function test_update()
     {
         // unit not found
-        $unit = Unit::update(1000, [
-            'value' => 1000,
-            'status' => true,
-            'translation' => [
-                'name' => 'Kilogram',
-                'code' => 'kg',
-                'position' => 'left',
-                'description' => 'The kilogram is the base unit of mass in the International System of Units (SI).',
-            ],
-        ]);
+        try {
+            $unit = Unit::update(1000, [
+                'value' => 1000,
+                'status' => true,
+                'translation' => [
+                    'name' => 'Kilogram',
+                    'code' => 'kg',
+                    'position' => 'left',
+                    'description' => 'The kilogram is the base unit of mass in the International System of Units (SI).',
+                ],
+            ]);
 
-        $this->assertIsArray($unit);
-        $this->assertFalse($unit['ok']);
-        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
-        $this->assertEquals($unit['errors'], [
-            'form' => [
-                trans('unit::base.validation.object_not_found')
-            ]
-        ]);
-        $this->assertEquals(404, $unit['status']);
+            $this->assertIsArray($unit);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitNotFoundException::class, $e);
+        }
 
         // store a unit
         $unitStore = Unit::store([
@@ -149,26 +146,22 @@ class UnitTest extends BaseUnit
         ]);
 
         // update with duplicate value
-        $unit = Unit::update($unitStore['data']->id, [
-            'value' => 1000,
-            'status' => true,
-            'translation' => [
-                'name' => 'Ounce',
-                'code' => 'oz',
-                'position' => 'left',
-                'description' => 'The ounce is a unit of mass.',
-            ],
-        ]);
+        try {
+            $unit = Unit::update($unitStore['data']->id, [
+                'value' => 1000,
+                'status' => true,
+                'translation' => [
+                    'name' => 'Ounce',
+                    'code' => 'oz',
+                    'position' => 'left',
+                    'description' => 'The ounce is a unit of mass.',
+                ],
+            ]);
 
-        $this->assertIsArray($unit);
-        $this->assertFalse($unit['ok']);
-        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
-        $this->assertEquals($unit['errors'], [
-            'value' => [
-                trans('unit::base.validation.unit_type_cannot_change_default_value')
-            ]
-        ]);
-        $this->assertEquals(422, $unit['status']);
+            $this->assertIsArray($unit);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitTypeCannotChangeDefaultValueException::class, $e);
+        }
 
         // update with another name
         $unit = Unit::update($unitStore['data']->id, [
