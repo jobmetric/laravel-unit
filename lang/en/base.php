@@ -37,6 +37,7 @@ return [
         "unit_type_not_in_unit_allow_types" => "Unit type ':type' not in unit allow types!",
         "unit_type_used_in" => "Unit number ':unit_id' used in ':number' places!",
         "cannot_delete_default_value" => "You cannot remove the default value until other items have been removed!",
+        "from_and_to_must_same_type" => "The from and to of the conversion must be of the same type!",
     ],
 
 ];

@@ -10,6 +10,7 @@ use JobMetric\Unit\Events\UnitDeleteEvent;
 use JobMetric\Unit\Events\UnitStoreEvent;
 use JobMetric\Unit\Events\UnitUpdateEvent;
 use JobMetric\Unit\Exceptions\CannotDeleteDefaultValueException;
+use JobMetric\Unit\Exceptions\FromAndToMustSameTypeException;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
 use JobMetric\Unit\Exceptions\UnitTypeCannotChangeDefaultValueException;
 use JobMetric\Unit\Exceptions\UnitTypeDefaultValueException;
@@ -466,6 +467,10 @@ class Unit
 
         if (!$to_unit) {
             throw new UnitNotFoundException($to_unit_id);
+        }
+
+        if ($from_unit->type != $to_unit->type) {
+            throw new FromAndToMustSameTypeException;
         }
 
         return $value * $from_unit->value / $to_unit->value;
