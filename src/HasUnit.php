@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use JobMetric\Unit\Exceptions\ModelUnitContractNotFoundException;
 use JobMetric\Unit\Exceptions\TypeNotFoundInAllowTypesException;
 use JobMetric\Unit\Exceptions\UnitNotFoundException;
+use JobMetric\Unit\Exceptions\UnitTypeNotInUnitAllowTypesException;
+use JobMetric\Unit\Facades\Unit as UnitFacades;
 use JobMetric\Unit\Http\Resources\UnitResource;
 use JobMetric\Unit\Models\Unit;
 use JobMetric\Unit\Models\UnitRelation;
@@ -65,31 +67,13 @@ trait HasUnit
         $unit = Unit::withTrashed()->find($unit_id);
 
         if (!$unit) {
-            return [
-                'ok' => false,
-                'message' => trans('unit::base.validation.errors'),
-                'errors' => [
-                    'form' => [
-                        trans('unit::base.validation.object_not_found')
-                    ]
-                ],
-                'status' => 404
-            ];
+            throw new UnitNotFoundException($unit_id);
         }
 
         $unitAllowTypes = $this->unitAllowTypes();
 
         if (!in_array($type, $unitAllowTypes)) {
-            return [
-                'ok' => false,
-                'message' => trans('unit::base.validation.errors'),
-                'errors' => [
-                    'form' => [
-                        trans('unit::base.validation.unit_type_not_in_unit_allow_types')
-                    ]
-                ],
-                'status' => 422
-            ];
+            throw new UnitTypeNotInUnitAllowTypesException($type);
         }
 
         // @todo check duplicate type
@@ -112,6 +96,7 @@ trait HasUnit
      * @param int $unit_id
      *
      * @return array
+     * @throws Throwable
      */
     public function detachUnit(int $unit_id): array
     {
@@ -130,16 +115,7 @@ trait HasUnit
             }
         }
 
-        return [
-            'ok' => false,
-            'message' => trans('unit::base.validation.errors'),
-            'errors' => [
-                'form' => [
-                    trans('unit::base.validation.object_not_found')
-                ]
-            ],
-            'status' => 404
-        ];
+        throw new UnitNotFoundException($unit_id);
     }
 
     /**
@@ -218,7 +194,7 @@ trait HasUnit
 
         return [
             'translation' => $translation[app()->getLocale()],
-            'value' => \JobMetric\Unit\Facades\Unit::convert($unit_relation->unit_id, $convert_unit->id, $value)
+            'value' => UnitFacades::convert($unit_relation->unit_id, $convert_unit->id, $value)
         ];
     }
 }

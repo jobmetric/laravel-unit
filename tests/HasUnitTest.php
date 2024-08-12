@@ -70,7 +70,7 @@ class HasUnitTest extends BaseUnit
     public function test_get_unit_by_type(): void
     {
         $product = new Product();
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->getMediaByType('weight'));
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class, $product->getUnitByType('weight'));
     }
 
     /**
