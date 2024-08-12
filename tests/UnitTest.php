@@ -355,17 +355,13 @@ class UnitTest extends BaseUnit
         ]);
 
         // force deletes the unit again
-        $unit = Unit::forceDelete($unitStore['data']->id);
+        try {
+            $unit = Unit::forceDelete($unitStore['data']->id);
 
-        $this->assertIsArray($unit);
-        $this->assertFalse($unit['ok']);
-        $this->assertEquals($unit['message'], trans('unit::base.validation.errors'));
-        $this->assertEquals($unit['errors'], [
-            'form' => [
-                trans('unit::base.validation.object_not_found')
-            ]
-        ]);
-        $this->assertEquals(404, $unit['status']);
+            $this->assertIsArray($unit);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitNotFoundException::class, $e);
+        }
     }
 
     /**

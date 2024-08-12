@@ -394,16 +394,7 @@ class Unit
             $unit = UnitModel::onlyTrashed()->where('id', $unit_id)->first();
 
             if (!$unit) {
-                return [
-                    'ok' => false,
-                    'message' => trans('unit::base.validation.errors'),
-                    'errors' => [
-                        'form' => [
-                            trans('unit::base.validation.object_not_found')
-                        ]
-                    ],
-                    'status' => 404
-                ];
+                throw new UnitNotFoundException($unit_id);
             }
 
             event(new UnitForceDeleteEvent($unit));
