@@ -496,7 +496,7 @@ class Unit
         $unit = UnitModel::withTrashed()->find($unit_id);
 
         if (!$unit) {
-            return false;
+            throw new UnitNotFoundException($unit_id);
         }
 
         return UnitRelation::query()->where([

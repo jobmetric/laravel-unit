@@ -547,6 +547,15 @@ class UnitTest extends BaseUnit
             $this->assertInstanceOf(UnitRelationResource::class, $dataUsedIn);
         });
         $this->assertEquals(200, $usedIn['status']);
+
+        // Get the unit used in the product with a wrong unit id
+        try {
+            $usedIn = Unit::usedIn(1000);
+
+            $this->assertIsArray($usedIn);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitNotFoundException::class, $e);
+        }
     }
 
     /**
@@ -582,6 +591,13 @@ class UnitTest extends BaseUnit
         $usedIn = Unit::hasUsed($unitStore['data']->id);
 
         $this->assertTrue($usedIn);
+
+        // check with wrong unit id
+        try {
+            $usedIn = Unit::hasUsed(1000);
+        } catch (Throwable $e) {
+            $this->assertInstanceOf(UnitNotFoundException::class, $e);
+        }
     }
 
     /**
