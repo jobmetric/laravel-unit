@@ -1,3 +1,0 @@
-<div>
-    unit component
-</div>

@@ -7,6 +7,7 @@ use JobMetric\PackageCore\Exceptions\MigrationFolderNotFoundException;
 use JobMetric\PackageCore\Exceptions\RegisterClassTypeNotFoundException;
 use JobMetric\PackageCore\PackageCore;
 use JobMetric\PackageCore\PackageCoreServiceProvider;
+use JobMetric\Unit\View\Components\Field;
 
 class UnitServiceProvider extends PackageCoreServiceProvider
 {
@@ -35,6 +36,6 @@ class UnitServiceProvider extends PackageCoreServiceProvider
     public function afterBootPackage(): void
     {
         // add alias for components
-        Blade::component('unit::components.unit', 'unit');
+        Blade::component(Field::class, 'unit-field');
     }
 }
