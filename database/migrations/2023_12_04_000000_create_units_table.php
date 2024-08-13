@@ -24,7 +24,7 @@ return new class extends Migration {
              * use: @extends UnitTypeEnum
              */
 
-            $table->decimal('value', 15, 8)->default(0);
+            $table->decimal('value', 20, 10)->default(0);
 
             $table->boolean('status')->default(true)->index();
 

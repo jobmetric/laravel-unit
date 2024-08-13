@@ -31,7 +31,8 @@
         ],
         "psr-4": {
             "JobMetric\\Unit\\": "src/",
-            "JobMetric\\Unit\\Factories\\": "database/factories/"
+            "JobMetric\\Unit\\Factories\\": "database/factories/",
+            "JobMetric\\Unit\\Seeders\\": "database/seeders/"
         }
     },
     "extra": {
