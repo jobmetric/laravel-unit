@@ -14,8 +14,8 @@ class Field extends Component
      */
     public function __construct(
         public string $type,
-        public string $dataInput,
-        public string $dataSelect,
+        public string $dataInput = '',
+        public string $dataSelect = '',
     )
     {
     }
