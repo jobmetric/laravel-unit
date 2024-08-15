@@ -4,8 +4,6 @@ namespace JobMetric\Unit\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use JobMetric\Location\Models\LocationCountry;
-use JobMetric\Location\Rules\CheckExistNameRule;
 use JobMetric\Translation\Rules\TranslationFieldExistRule;
 use JobMetric\Unit\Enums\UnitTypeEnum;
 use JobMetric\Unit\Models\Unit;

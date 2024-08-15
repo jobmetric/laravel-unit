@@ -4,8 +4,6 @@ namespace JobMetric\Unit\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use JobMetric\Location\Models\LocationCountry;
-use JobMetric\Location\Rules\CheckExistNameRule;
 use JobMetric\Translation\Rules\TranslationFieldExistRule;
 use JobMetric\Unit\Models\Unit;
 
@@ -42,7 +40,7 @@ class UpdateUnitRequest extends FormRequest
             'translation.name' => [
                 'sometimes',
                 'string',
-                new TranslationFieldExistRule(Unit::class, 'name', unit_id: $unit_id),
+                new TranslationFieldExistRule(Unit::class, 'name', object_id: $unit_id),
             ],
             'translation.code' => 'sometimes|string',
             'translation.position' => 'sometimes|string|in:left,right|nullable',
