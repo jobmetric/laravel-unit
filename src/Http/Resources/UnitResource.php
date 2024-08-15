@@ -38,8 +38,8 @@ class UnitResource extends JsonResource
 
             'translations' => translationResourceData($this->translations, $translationLocale),
 
-            'unitRelation' => $this->whenLoaded('unitRelation', function () {
-                return UnitRelationResource::collection($this->unitRelation);
+            'unitRelations' => $this->whenLoaded('unitRelations', function () {
+                return UnitRelationResource::collection($this->unitRelations);
             }),
         ];
     }
