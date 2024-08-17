@@ -3,6 +3,8 @@
 namespace JobMetric\Unit;
 
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -44,6 +46,25 @@ class Unit
     public function __construct(Application $app)
     {
         $this->app = $app;
+    }
+
+    /**
+     * Get the object unit.
+     *
+     * @param int $unit_id
+     *
+     * @return Builder|Model
+     * @throws Throwable
+     */
+    public function getObject(int $unit_id): Builder|Model
+    {
+        $unit = UnitModel::query()->where('id', $unit_id)->first();
+
+        if (!$unit) {
+            throw new UnitNotFoundException($unit_id);
+        }
+
+        return $unit;
     }
 
     /**

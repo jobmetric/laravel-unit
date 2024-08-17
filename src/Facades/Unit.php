@@ -5,10 +5,11 @@ namespace JobMetric\Unit\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model getObject(int $unit_id)
  * @method static \Spatie\QueryBuilder\QueryBuilder query(array $filter = [], array $with = [])
  * @method static \Illuminate\Http\Resources\Json\AnonymousResourceCollection paginate(array $filter = [], int $page_limit = 15, array $with = [])
  * @method static \Illuminate\Http\Resources\Json\AnonymousResourceCollection all(array $filter = [], array $with = [])
- * @method static array get(int $unit_id, array $with = [], string $mode = null, string $locale = null)
+ * @method static array get(int $unit_id, array $with = [], string $locale = null)
  * @method static array store(array $data)
  * @method static array update(int $unit_id, array $data)
  * @method static array delete(int $unit_id)
