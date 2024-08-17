@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use JobMetric\Media\Contracts\MediaContract;
+use JobMetric\Media\HasFile;
 use JobMetric\PackageCore\Models\HasBooleanStatus;
 use JobMetric\Translation\Contracts\TranslationContract;
 use JobMetric\Translation\HasTranslation;
+use JobMetric\Unit\Events\UnitMediaAllowCollectionEvent;
 
 /**
  * JobMetric\Unit\Models\Unit
@@ -25,9 +28,9 @@ use JobMetric\Translation\HasTranslation;
  * @method static Builder ofType(string $type)
  * @method static find(int $unit_id)
  */
-class Unit extends Model implements TranslationContract
+class Unit extends Model implements TranslationContract, MediaContract
 {
-    use HasFactory, HasBooleanStatus, HasTranslation;
+    use HasFactory, HasBooleanStatus, HasTranslation, HasFile;
 
     protected $fillable = [
         'type',
@@ -54,6 +57,30 @@ class Unit extends Model implements TranslationContract
             'position',
             'description',
         ];
+    }
+
+    /**
+     * media allow collections.
+     *
+     * @return array
+     */
+    public function mediaAllowCollections(): array
+    {
+        $event = new UnitMediaAllowCollectionEvent([
+            'base' => [
+                'media_collection' => 'public',
+                'size' => [
+                    'default' => [
+                        'w' => config('unit.default_image_size.width'),
+                        'h' => config('unit.default_image_size.height'),
+                    ]
+                ]
+            ],
+        ]);
+
+        event($event);
+
+        return $event->mediaAllowCollection;
     }
 
     public function unitRelations(): HasMany
